@@ -1,42 +1,82 @@
-export default function EnterpriseRegisterPage() {
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function RegisterEnterprisePage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        role: "ENTERPRISE",
+        companyName,
+      }),
+    });
+
+    const data = await res.json();
+
+    setLoading(false);
+
+    if (res.ok) {
+      // Redirigir al login o dashboard
+      router.push("/login");
+    } else {
+      setError(data.error || "Algo salió mal");
+    }
+  };
+
   return (
-    <main className="min-h-screen flex items-center justify-center px-6">
-      <div className="w-full max-w-md border rounded-lg p-6">
-        <h2 className="text-2xl font-semibold mb-6 text-center">
-          Enterprise Registration
-        </h2>
-
-        <form className="space-y-4">
-          <input
-            type="text"
-            placeholder="Company Name"
-            className="w-full px-4 py-2 border rounded-md"
-          />
-
-          <input
-            type="email"
-            placeholder="Company Email"
-            className="w-full px-4 py-2 border rounded-md"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-2 border rounded-md"
-          />
-
-          <button
-            type="submit"
-            className="w-full py-2 bg-black text-white rounded-md hover:bg-gray-800"
-          >
-            Create Enterprise Account
-          </button>
-        </form>
-
-        <p className="text-sm text-center text-gray-500 mt-4">
-          Already registered? <a href="/login" className="underline">Login</a>
-        </p>
-      </div>
-    </main>
+    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
+      <h1 className="text-2xl font-bold mb-4">Registro de Empresa</h1>
+      {error && <p className="text-red-500 mb-2">{error}</p>}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          className="border p-2 rounded"
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          className="border p-2 rounded"
+        />
+        <input
+          type="text"
+          placeholder="Nombre de la empresa"
+          value={companyName}
+          onChange={e => setCompanyName(e.target.value)}
+          required
+          className="border p-2 rounded"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        >
+          {loading ? "Registrando..." : "Registrar Empresa"}
+        </button>
+      </form>
+    </div>
   );
 }
