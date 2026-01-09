@@ -26,6 +26,8 @@ export default function RegisterEnterprisePage() {
         role: "ENTERPRISE",
         companyName,
       }),
+
+
     });
 
     const data = await res.json();

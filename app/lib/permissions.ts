@@ -1,52 +1,14 @@
-import type { Role } from "./constants";
+import { ROLES } from "./constants";
 
-type Permissions = {
-  canAccessAdmin?: boolean;
-  canManageModels?: boolean;
-  canManageEnterprises?: boolean;
-  canManagePayments?: boolean;
-  canViewAllModels?: boolean;
-  canEditAllProfiles?: boolean;
-
-  canAccessModelDashboard?: boolean;
-  canEditOwnProfile?: boolean;
-  canPublishProfile?: boolean;
-  canViewEnterpriseRequests?: boolean;
-
-  canAccessEnterpriseDashboard?: boolean;
-  canViewCatalog?: boolean;
-  canViewModelPreview?: boolean;
-  canContactModels?: boolean;
-};
-
-export const PERMISSIONS: Record<Role, Permissions> = {
-  ADMIN: {
-    canAccessAdmin: true,
-    canManageModels: true,
-    canManageEnterprises: true,
-    canManagePayments: true,
-    canViewAllModels: true,
-    canEditAllProfiles: true,
-  },
-
-  MODEL: {
-    canAccessModelDashboard: true,
-    canEditOwnProfile: true,
-    canPublishProfile: true,
-    canViewEnterpriseRequests: true,
-  },
-
-  ENTERPRISE: {
-    canAccessEnterpriseDashboard: true,
-    canViewCatalog: true,
-    canViewModelPreview: true,
-    canContactModels: false,
-  },
+export const permissions = {
+  admin: ["manage_users", "manage_payments"],
+  model: ["edit_profile", "upload_portfolio"],
+  enterprise: ["view_models", "subscribe"],
 };
 
 export function hasPermission(
-  role: Role,
-  permission: keyof Permissions
+  role: string,
+  permission: string
 ): boolean {
-  return Boolean(PERMISSIONS[role]?.[permission]);
+  return permissions[role as keyof typeof permissions]?.includes(permission);
 }

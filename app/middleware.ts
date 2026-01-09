@@ -1,48 +1,58 @@
+import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { ROLES } from "@/app/lib/constants";
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default withAuth(
+  function middleware(req) {
+    const { pathname } = req.nextUrl;
+    const role = req.nextauth.token?.role;
 
-  const role = request.cookies.get("role")?.value;
+    // Admin-only routes
+    if (
+      ["/models", "/payments"].some(p => pathname.startsWith(p)) &&
+      role !== ROLES.ADMIN
+    ) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
 
-  // Public routes
-  if (
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register")
-  ) {
+    // Model-only routes
+    if (
+      ["/profile", "/portfolio", "/availability"].some(p =>
+        pathname.startsWith(p)
+      ) &&
+      role !== ROLES.MODEL
+    ) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    // Enterprise-only routes
+    if (
+      ["/catalog", "/subscriptions"].some(p =>
+        pathname.startsWith(p)
+      ) &&
+      role !== ROLES.ENTERPRISE
+    ) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
     return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
   }
-
-  // Admin protection
-  if (pathname.startsWith("/admin")) {
-    if (role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
-
-  // Model protection
-  if (pathname.startsWith("/model")) {
-    if (role !== "MODEL") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
-
-  // Enterprise protection
-  if (pathname.startsWith("/enterprise")) {
-    if (role !== "ENTERPRISE") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
-
-  return NextResponse.next();
-}
+);
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/model/:path*",
-    "/enterprise/:path*",
+    "/dashboard/:path*",
+    "/models/:path*",
+    "/payments/:path*",
+    "/profile/:path*",
+    "/portfolio/:path*",
+    "/availability/:path*",
+    "/catalog/:path*",
+    "/subscriptions/:path*",
   ],
 };

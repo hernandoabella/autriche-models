@@ -11,7 +11,11 @@ export default function RegisterModelPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role: "MODEL" }),
+      body: JSON.stringify({
+        email,
+        password,
+        role: "MODEL",
+      }),
     });
     const data = await res.json();
     console.log(data);
